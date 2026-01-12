@@ -109,8 +109,11 @@ int main(void)
 
   while (1)
   {
+	  ssd1306_Fill(Black);
+	  ssd1306_SetCursor(2, 10);
+	  ssd1306_WriteString("Podaj liczbe prob", Font_7x10, White);
 
-
+	  ssd1306_UpdateScreen();
 
 	  // NIE DOTYKAĆ
 	  reg = readWordINA(0x07);
