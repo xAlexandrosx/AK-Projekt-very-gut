@@ -1,0 +1,14 @@
+../Core/Src/main.c:70:12:Znajdz_Pracownika	24	static
+../Core/Src/main.c:78:6:Rejestruj_Pracownika_UART	152	static
+../Core/Src/main.c:180:6:Ustaw_Date_Czas_UART	256	static
+../Core/Src/main.c:237:6:Ekran_Startowy	72	static
+../Core/Src/main.c:271:6:Lista_Aktywnych_OLED	64	static
+../Core/Src/main.c:369:17:readWordINA	32	static
+../Core/Src/main.c:395:5:main	40	static
+../Core/Src/main.c:473:6:SystemClock_Config	96	static
+../Core/Src/main.c:524:13:MX_I2C1_Init	176	static
+../Core/Src/main.c:593:13:MX_RTC_Init	8	static
+../Core/Src/main.c:629:13:MX_SPI1_Init	8	static
+../Core/Src/main.c:672:13:MX_USART2_UART_Init	8	static
+../Core/Src/main.c:707:13:MX_GPIO_Init	48	static
+../Core/Src/main.c:770:6:Error_Handler	4	static,ignoring_inline_asm
