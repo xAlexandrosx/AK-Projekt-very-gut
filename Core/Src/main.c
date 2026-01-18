@@ -11,9 +11,6 @@
 #define SSD1306_INCLUDE_FONT_11x18
 #include "ssd1306_fonts.h"
 
-extern RTC_HandleTypeDef hrtc;
-extern UART_HandleTypeDef huart2;
-
 I2C_HandleTypeDef hi2c1;
 
 RTC_HandleTypeDef hrtc;
@@ -50,6 +47,39 @@ static uint16_t readWordINA(uint8_t reg)
 	return 0xFFFF;
 }
 
+void uart_print(char *msg)
+{
+	HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
+
+void wait_for_button(void)
+{
+	while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET);
+	HAL_Delay(50); // debounce
+	while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET);
+}
+
+uint32_t random_delay_ms(void)
+{
+	return (rand() % 9001) + 1000;
+}
+
+void oled_clear(void)
+{
+	ssd1306_Fill(Black);
+	ssd1306_UpdateScreen();
+}
+
+void oled_text(char *text)
+{
+	ssd1306_Fill(Black);
+	ssd1306_SetCursor(0, 20);
+	ssd1306_WriteString(text, Font_11x18, White);
+	ssd1306_UpdateScreen();
+}
+
+
 int main(void)
 {
   uint16_t reg=0;
@@ -60,6 +90,8 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI1_Init();
   MX_RTC_Init();
+	srand(HAL_GetTick());
+
 
 	reg = readWord(0x13);
 
@@ -67,17 +99,51 @@ int main(void)
 
  	ssd1306_Init();          // inicjalizacja ekranu
 
+	int ilosc_prob = 5;   // for now, fixed value
 
   while (1)
   {
-	  ssd1306_Fill(Black);
-	  ssd1306_SetCursor(2, 10);
-	  ssd1306_WriteString("Podaj liczbe prob", Font_7x10, White);
+  	char buffer[64];
+  	uint32_t startTime, endTime, reactionTime;
+  	/* === SHOW NUMBER OF TRIALS ON OLED === */
+  	sprintf(buffer, "Ilosc prob: %d", ilosc_prob);
+  	oled_text(buffer);
+  	HAL_Delay(2000);
 
-	  ssd1306_UpdateScreen();
+  	/* === EXPERIMENT LOOP === */
+  	for (int i = 0; i < ilosc_prob; i++)
+  	{
+  		oled_text("3");
+  		HAL_Delay(1000);
 
-	  // NIE DOTYKAĆ
-	  reg = readWordINA(0x07);
+  		oled_text("2");
+  		HAL_Delay(1000);
+
+  		oled_text("1");
+  		HAL_Delay(random_delay_ms());
+
+  		/* LED ON = stimulus */
+  		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+
+  		oled_text("START");
+
+  		startTime = HAL_GetTick();
+
+  		wait_for_button();
+
+  		endTime = HAL_GetTick();
+  		reactionTime = endTime - startTime;
+
+  		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+
+  		/* === ONLY RESULTS GO TO PUTTY === */
+  		sprintf(buffer, "Proba %d: %lu ms\r\n", i + 1, reactionTime);
+  		uart_print(buffer);
+
+  		HAL_Delay(500);
+  	}
+
+  	oled_text("KONIEC");
   }
 }
 
